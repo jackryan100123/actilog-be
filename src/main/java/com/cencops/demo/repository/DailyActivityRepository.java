@@ -23,8 +23,7 @@ public interface DailyActivityRepository extends JpaRepository<DailyActivity, Lo
 
     @Query("SELECT d FROM DailyActivity d WHERE " +
             "(:userId IS NULL OR d.user.id = :userId) AND " +
-            "(cast(:startDate as localdate) IS NULL OR d.activityDate >= :startDate) AND " +
-            "(cast(:endDate as localdate) IS NULL OR d.activityDate <= :endDate)")
+            "(d.activityDate BETWEEN :startDate AND :endDate)")
     List<DailyActivity> findDashboardSummary(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
@@ -43,7 +42,8 @@ public interface DailyActivityRepository extends JpaRepository<DailyActivity, Lo
 
     @Query("SELECT d FROM DailyActivity d WHERE " +
             "(:userId IS NULL OR d.user.id = :userId) AND " +
-            "(d.activityDate BETWEEN :startDate AND :endDate)")
+            "(d.activityDate BETWEEN :startDate AND :endDate) " +
+            "ORDER BY d.activityDate DESC")
     Page<DailyActivity> findByFilters(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
