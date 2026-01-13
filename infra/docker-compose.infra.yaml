@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: case_management
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      TZ: "Asia/Kolkata"
+      PGTZ: "Asia/Kolkata"
+    ports:
+      - "5433:5432"
+    volumes:
+      # Data is kept in a Docker-managed internal volume
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - case-net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_ui
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      # Optional: keeps your pgAdmin settings/saved servers internal
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - case-net
+
+networks:
+  case-net:
+    name: case-net
+    driver: bridge
+
+volumes:
+  # These are managed by Docker's internal storage driver
+  pgdata:
+  pgadmin_data:

@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    container_name: springboot_app
+    ports:
+      - "8080:8080"
+    environment:
+      # Use the service name 'db' from the other file
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/case_management
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin123
+      # Redundant but safe:
+      TZ: "Asia/Kolkata"
+    networks:
+      - case-net
+
+networks:
+  case-net:
+    external: true
