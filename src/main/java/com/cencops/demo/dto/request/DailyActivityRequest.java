@@ -3,6 +3,7 @@ package com.cencops.demo.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,12 +12,13 @@ import java.util.List;
 @Data
 public class DailyActivityRequest {
     @NotNull(message = "Activity date is required")
+    @PastOrPresent(message = "Activity date cannot be in the future")
     private LocalDate activityDate;
 
-    @NotBlank(message = "Detail of case is required")
+//    @NotBlank(message = "Detail of case is required")
     private String detailOfCase;
 
-    @NotBlank(message = "Type of information is required")
+//    @NotBlank(message = "Type of information is required")
     private String typeOfInformation;
 
 //    @NotBlank(message = "Name of IO is required")
