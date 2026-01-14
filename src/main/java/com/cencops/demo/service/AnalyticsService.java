@@ -61,6 +61,10 @@ public class AnalyticsService {
                 "datasets", List.of(Map.of("data", List.of(completed, inProgress, pending)))
         ));
 
+        stats.put("allLogsForExcel", activities.stream()
+                .map(activityService::mapToResponse)
+                .collect(Collectors.toList()));
+
         return stats;
     }
 
