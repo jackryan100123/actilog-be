@@ -67,10 +67,6 @@ public class AnalyticsService {
     public Page<DailyActivityResponse> getPaginatedLogs(Long userId, String filterType, String dateStr, Pageable pageable) {
         LocalDate refDate = parseSafeDate(dateStr);
         LocalDate[] range = calculateRange(filterType, refDate);
-
-        // Debugging print to see range in console
-        System.out.println("Filter: " + filterType + " | Range: " + range[0] + " to " + range[1]);
-
         return activityRepository.findByFilters(userId, range[0], range[1], pageable)
                 .map(activityService::mapToResponse);
     }
@@ -91,7 +87,7 @@ public class AnalyticsService {
         return switch (type) {
             case "DAILY" -> new LocalDate[]{refDate, refDate};
             case "WEEKLY" -> {
-                LocalDate start = refDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                LocalDate start = refDate.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
                 yield new LocalDate[]{start, start.plusDays(6)};
             }
             case "MONTHLY" -> new LocalDate[]{
