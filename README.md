@@ -1,96 +1,166 @@
-# Case Management System - Dockerized Setup (IST)
+# Actilog (Spring Boot)
 
-This project consists of a **Spring Boot** backend and a **PostgreSQL** database with **pgAdmin**, segregated into two logical stacks sharing a common Docker network.
-
-## 🏗 Architecture & Timezone
-
-* **Timezone:** Asia/Kolkata (IST)
-* **Network Name:** `case-net`
-* **Infrastructure:** PostgreSQL + pgAdmin
-* **Application:** Spring Boot (Multi-stage Docker build)
+A robust backend application built with **Spring Boot 3.x**, focused on secure user management, role-based access control (RBAC), and daily activity logging for analysts.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Key Features
 
-### 1. Prerequisites
+### 🔐 Secure Authentication
+- Implements **JWT (JSON Web Token)** with dedicated **access** and **refresh** token mechanisms.
 
-* Docker & Docker Desktop installed.
-* Ports **8080** (Application), **5433** (Database External), and **5050** (pgAdmin) must be available.
+### 🧩 Role-Based Access Control (RBAC)
+- Supports a hierarchical role system:
+
+SUPER_ADMIN > ADMIN > ANALYST 
+
+
+### 👥 User Management
+- Full **CRUD operations** for administrators to register, update, and delete users.
+
+### 🔒 Account Controls
+- Admins can toggle user status between **ACTIVE** and **INACTIVE** to instantly restrict access.
+
+### 📝 Daily Activity Tracking
+- Designed for analysts to log:
+   - Case details
+   - Tools used
+   - Task status
+
+### 📊 Analytics & Logging
+- Dedicated endpoints for admins to:
+   - View paginated activity logs
+   - Access summary statistics
+
+### 🚫 Token Blacklisting
+- Secure logout functionality by blacklisting tokens **in-memory** until expiration.
+
+### 📘 API Documentation
+- Integrated **Swagger / OpenAPI** for easy testing of endpoints.
 
 ---
 
-### 2. Startup Sequence
+## 🛠️ Tech Stack
 
-#### Step A: Start Infrastructure (Database & Network)
+- **Framework:** Spring Boot 3.x
+- **Security:** Spring Security 6.x
+- **JWT Library:** JJWT (Java JWT)
+- **Database:** Spring Data JPA (Hibernate)
+- **API Documentation:** SpringDoc OpenAPI (Swagger)
+- **Utilities:** Lombok, Jakarta Validation
 
-```powershell
-docker-compose -f infra/docker-compose.infra.yaml up -d
+---
+
+## 📋 Prerequisites
+
+- **Java:** JDK 17 or higher
+- **Build Tool:** Maven 3.6+
+- **Database:** Any SQL database supported by JPA (e.g., MySQL, PostgreSQL)
+
+---
+
+## ⚙️ Configuration
+
+Set the following properties in your `application.properties` or `application.yml` file:
+
+```properties
+# JWT Configuration
+jwt.secret=your_base64_encoded_secret_key_here
+jwt.access-expiration=3600000   # 1 hour in ms
+jwt.refresh-expiration=86400000 # 24 hours in ms
+
+# Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/your_db
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+
+
 ```
 
-#### Step B: Start Application  
-```powershell
-docker-compose -f docker-compose.app.yaml up -d --build
-```
+## 🔑 Initial Setup & Roles
 
-## 🛠 Management Commands
+The system is configured with a **hierarchical role structure**, where higher roles inherit permissions from lower ones.
 
-| Action | Command |
-| --- | --- |
-| View Application Logs | `docker logs -f springboot_app` |
-| Stop Application | `docker-compose -f docker-compose.app.yaml down` |
-| Stop Everything | `docker-compose -f docker-compose.app.yaml down; docker-compose -f infra/docker-compose.infra.yaml down` |
-| Remove Unused Networks | `docker network prune` |
+### Default Super Admin
+- On first run, the system initializes a **SUPER_ADMIN** account.
 
----
+### Role Capabilities
 
-## 🔗 Connection Details
+#### SUPER_ADMIN
+- Manage roles
+- Manage all system users
 
-### Internal (Container-to-Container)
+#### ADMIN
+- Register users
+- Manage activities
 
-* **Database Host:** `db`
-* **Database Port:** `5432`
-* **Network:** `case-net`
+#### ANALYST
+- Create and manage their own daily activities
 
 ---
 
-### External (Laptop-to-Container)
+## 🔌 Core API Endpoints
 
-* **Swagger UI:** http://localhost:8080/swagger-ui.html
-* **pgAdmin UI:** http://localhost:5050  
-  **Login:** `admin@admin.com` / `admin`
-* **Local DB Tool:** `localhost:5433`
+### 🔐 Authentication (`/auth`)
+
+- **POST `/auth/login`**  
+  Authenticate and receive an access token and refresh cookie.
+
+- **POST `/auth/refresh`**  
+  Refresh an expired access token using the refresh cookie.
+
+- **POST `/auth/logout`**  
+  Invalidate the current token.
 
 ---
 
-## 🐳 pgAdmin Setup
+### 👨‍💼 Admin Operations (`/admin`)
 
-1. Open http://localhost:5050
-2. Click **Add New Server**
-3. Use the following connection details:
-   * **Host:** `db`
-   * **Port:** `5432`
-   * **Maintenance DB:** `case_management`
-   * **Username:** `admin`
-   * **Password:** `admin123`
+- **GET `/admin/users`**  
+  List all system users  
+  *(SUPER_ADMIN, ADMIN, MANAGER)*
 
-## 🕒 Timezone Verification
+- **POST `/admin/register`**  
+  Register a new user  
+  *(SUPER_ADMIN, ADMIN)*
+
+- **PUT `/admin/users/{id}/status`**  
+  Toggle user account status.
+
+---
+
+### 📝 Daily Activities (`/daily-activities`)
+
+- **POST `/daily-activities`**  
+  Create a new activity log *(ANALYST role)*
+
+- **GET `/daily-activities`**  
+  View activities with pagination and filtering.
+
+---
+
+## 🛡️ Security Implementation
+
+The project uses a **stateless `JwtAuthenticationFilter`** that intercepts incoming requests and performs:
+
+### Token Validation
+- Expiration check
+- Signature verification
+- Token type validation *(Access vs Refresh)*
+
+### Blacklist Check
+- Ensures logged-out tokens cannot be reused
+
+### User Status Check
+- Automatically rejects requests from users marked as **INACTIVE**
+
+---
+
+## 📖 API Documentation
+
+Once the application is running, access Swagger UI at:
 
 ```powershell
-docker exec springboot_app java -XshowSettings:properties -version
-```
-## Expected response
-```powershell
-user.timezone = Asia/Kolkata
-```
 
-##project structure 
-```powershell
-project-root/
-├── infra/
-│   └── docker-compose.infra.yaml
-├── docker-compose.app.yaml
-├── Dockerfile
-├── README.md
-└── src/
+http://localhost:8080/swagger-ui/index.html
 ```
