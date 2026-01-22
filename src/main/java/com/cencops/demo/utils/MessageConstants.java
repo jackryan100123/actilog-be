@@ -52,4 +52,9 @@ public final class MessageConstants {
     public static final String EDIT_AFTER_DAY_END = "Editing is not allowed after the day this activity was posted.";
     public static final String DELETE_AFTER_DAY_END = "Deleting is allowed only until the end of the day the activity was created.";
 
+    public static final String ATTACHMENT_EMPTY = "Attachment file cannot be empty";
+
+    public static final String NOTICE_CREATED ="Notice updated for category: ";
+    public static final String MANUAL_ADDED ="Manual uploaded";
+    public static final String MANUAL_REMOVED ="Manual removed";
 }

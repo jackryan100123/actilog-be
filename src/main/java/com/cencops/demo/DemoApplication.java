@@ -2,6 +2,7 @@ package com.cencops.demo;
 
 import com.cencops.demo.entity.User;
 import com.cencops.demo.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,7 +19,10 @@ public class DemoApplication {
     }
 
     @Bean
-    CommandLineRunner init(UserRepository userRepository, BCryptPasswordEncoder encoder) {
+    CommandLineRunner init(
+            UserRepository userRepository,
+            @Value("${app.superadmin.password.hash}") String passwordHash
+    ) {
         return args -> {
             if (userRepository.findByUsername("superadmin").isEmpty()) {
                 userRepository.save(User.builder()
@@ -26,7 +30,7 @@ public class DemoApplication {
                         .username("superadmin")
                         .designation("Super Admin")
                         .status(User.Status.ACTIVE)
-                        .password(encoder.encode("superAdmin123"))
+                        .password(passwordHash)
                         .role(User.Role.SUPER_ADMIN)
                         .createdBy("SYSTEM")
                         .updatedBy("SYSTEM")
@@ -34,5 +38,6 @@ public class DemoApplication {
             }
         };
     }
+
 
 }
